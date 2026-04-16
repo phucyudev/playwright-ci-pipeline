@@ -1,13 +1,15 @@
-# 🎭 My Playwright Pipeline
+# 🎭 Playwright CI/CD Pipeline
 
-[![Playwright Tests](https://github.com/anhtester/antigravity-testing-kit/actions/workflows/playwright.yml/badge.svg)](https://github.com/anhtester/antigravity-testing-kit/actions/workflows/playwright.yml)
+[![Playwright Tests](https://github.com/phucyudev/playwright-ci-pipeline/actions/workflows/playwright.yml/badge.svg)](https://github.com/phucyudev/playwright-ci-pipeline/actions/workflows/playwright.yml)
 [![Playwright Version](https://img.shields.io/badge/Playwright-v1.59.1-45ba4b?logo=playwright)](https://playwright.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?logo=typescript)](https://www.typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?logo=node.js)](https://nodejs.org)
-[![Cloudflare Pages](https://img.shields.io/badge/Report-Cloudflare%20Pages-F38020?logo=cloudflare)](https://pages.cloudflare.com)
+[![Cloudflare Pages](https://img.shields.io/badge/Live%20Report-Cloudflare%20Pages-F38020?logo=cloudflare)](https://qa-automation-report.pages.dev)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-> An end-to-end automation testing pipeline built with **Playwright** and **TypeScript**, automated via **GitHub Actions**, and publishing HTML test reports to **Cloudflare Pages**.
+> End-to-end automation testing pipeline built with **Playwright TypeScript**, automated via **GitHub Actions**, and publishing live HTML reports to **Cloudflare Pages**.
+
+🔗 **Live Report:** [qa-automation-report.pages.dev](https://qa-automation-report.pages.dev)
 
 ---
 
@@ -28,13 +30,14 @@
 
 ## 🔍 Overview
 
-This project demonstrates a complete **CI/CD pipeline for UI automation testing** using Playwright with TypeScript. Every push to the `main`/`master` branch automatically triggers the test suite, collects results, and publishes a live HTML report to Cloudflare Pages — giving the entire team instant visibility into test health.
+This project demonstrates a production-ready **CI/CD pipeline for UI automation testing**. Every push to `main` automatically triggers the full test suite across three browser engines, then publishes a live HTML report to Cloudflare Pages — giving the entire team instant visibility into test health without needing to download any artifacts.
 
 **Key highlights:**
-- 🌐 Cross-browser testing: Chromium, Firefox, and WebKit
+
+- 🌐 Cross-browser testing — Chromium, Firefox, and WebKit
 - ♻️ Auto-retry on CI (up to 2 retries per failed test)
-- 📊 HTML report deployed live to Cloudflare Pages after every run
-- 🔒 Secrets managed securely via GitHub Actions secrets
+- 📊 Live HTML report deployed to Cloudflare Pages after every run
+- 🔒 Secrets managed securely via GitHub Actions
 
 ---
 
@@ -53,7 +56,7 @@ This project demonstrates a complete **CI/CD pipeline for UI automation testing*
 ## 📁 Project Structure
 
 ```
-my-playwright-pipeline/
+playwright-ci-pipeline/
 ├── .github/
 │   └── workflows/
 │       └── playwright.yml      # GitHub Actions CI/CD workflow
@@ -70,10 +73,8 @@ my-playwright-pipeline/
 
 ## ✅ Prerequisites
 
-Make sure you have the following installed:
-
-- [Node.js LTS](https://nodejs.org/en/download) (v18+ recommended)
-- [npm](https://www.npmjs.com) (comes with Node.js)
+- [Node.js LTS](https://nodejs.org/en/download) (v18+)
+- [npm](https://www.npmjs.com) (bundled with Node.js)
 - [Git](https://git-scm.com)
 
 ---
@@ -83,11 +84,11 @@ Make sure you have the following installed:
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/anhtester/antigravity-testing-kit.git
-cd antigravity-testing-kit/my-playwright-pipeline
+git clone https://github.com/phucyudev/playwright-ci-pipeline.git
+cd playwright-ci-pipeline
 ```
 
-**2. Install Node.js dependencies**
+**2. Install dependencies**
 
 ```bash
 npm ci
@@ -99,7 +100,7 @@ npm ci
 npx playwright install --with-deps
 ```
 
-> The `--with-deps` flag installs all required OS-level dependencies for the browsers automatically.
+> `--with-deps` installs all required OS-level system dependencies for the browsers automatically.
 
 ---
 
@@ -111,7 +112,7 @@ npx playwright install --with-deps
 npx playwright test
 ```
 
-### Run tests and open the HTML report
+### Run tests and view the HTML report
 
 ```bash
 npx playwright test --reporter=html
@@ -126,7 +127,7 @@ npx playwright test --project=firefox
 npx playwright test --project=webkit
 ```
 
-### Run tests in headed mode (visible browser)
+### Run tests in headed mode (visible browser window)
 
 ```bash
 npx playwright test --headed
@@ -138,7 +139,7 @@ npx playwright test --headed
 npx playwright test tests/example.spec.ts
 ```
 
-### Debug a test interactively
+### Debug tests interactively
 
 ```bash
 npx playwright test --debug
@@ -148,50 +149,57 @@ npx playwright test --debug
 
 ## ⚙️ CI/CD Pipeline
 
-The pipeline is defined in [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml) and runs automatically on:
+The pipeline is defined in [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml) and triggers automatically on:
 
 - **Push** to `main` or `master`
 - **Pull Request** targeting `main` or `master`
 
-### Pipeline Steps
+### Pipeline Flow
 
 ```
-┌────────────────────────────────────────────────────────┐
-│                    GitHub Actions                      │
-│                                                        │
-│  1. Checkout code           (actions/checkout@v4)      │
-│  2. Setup Node.js LTS       (actions/setup-node@v4)    │
-│  3. Install dependencies    (npm ci)                   │
-│  4. Install Playwright      (npx playwright install)   │
-│  5. Run tests               (npx playwright test)      │
-│  6. Upload report artifact  (actions/upload-artifact)  │
-│  7. Deploy to Cloudflare    (cloudflare/wrangler)      │
-└────────────────────────────────────────────────────────┘
+Push / Pull Request
+        │
+        ▼
+┌───────────────────────────────────────────┐
+│             GitHub Actions                │
+│                                           │
+│  1. Checkout code                         │
+│  2. Setup Node.js LTS                     │
+│  3. npm ci  →  Install dependencies       │
+│  4. Install Playwright browsers           │
+│  5. Run tests  →  Generate HTML report    │
+│  6. Upload report artifact (30 days)      │
+│  7. Deploy report to Cloudflare Pages     │
+└───────────────────────────────────────────┘
+        │
+        ▼
+ 🌐 qa-automation-report.pages.dev
 ```
 
 ### Required GitHub Secrets
 
-To enable the **Cloudflare Pages deployment**, set the following secrets in your GitHub repository (`Settings → Secrets and variables → Actions`):
+Set these in your repository under **Settings → Secrets and variables → Actions**:
 
-| Secret Name | Description |
+| Secret | Description |
 |---|---|
 | `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Pages edit permission |
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
 
-> **How to get these values:**
-> - **API Token**: Go to [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens) → Create Token → Use "Edit Cloudflare Workers" template.
-> - **Account ID**: Found in the right sidebar of any Cloudflare domain dashboard, or at `dash.cloudflare.com` → click your account.
+> - **API Token**: [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens) → Create Token → "Edit Cloudflare Workers" template
+> - **Account ID**: Found in the right sidebar of your Cloudflare dashboard
 
 ---
 
 ## 📊 Test Reports
 
-After each CI run, the HTML report is:
+After every CI run, the HTML report is available in two ways:
 
-1. **Uploaded as a GitHub Actions artifact** — retained for 30 days, downloadable from the Actions run summary page.
-2. **Deployed live to Cloudflare Pages** — available at the project URL under the name `qa-automation-report`.
+| Method | Details |
+|---|---|
+| 🌐 **Live URL** | [qa-automation-report.pages.dev](https://qa-automation-report.pages.dev) — updated after every push |
+| 📦 **GitHub Artifact** | Downloadable from the Actions run summary page, retained for 30 days |
 
-To view the report locally after a test run:
+To view the report **locally** after a test run:
 
 ```bash
 npx playwright show-report
@@ -201,31 +209,30 @@ npx playwright show-report
 
 ## 🔧 Configuration
 
-The `playwright.config.ts` file controls the test behaviour:
+The `playwright.config.ts` file controls test behaviour:
 
-| Option | Value | Description |
-|---|---|---|
-| `testDir` | `./tests` | Directory containing test files |
-| `fullyParallel` | `true` | Run all test files in parallel |
-| `retries` | `2` (CI) / `0` (local) | Auto-retry failed tests on CI |
-| `workers` | `1` (CI) / auto (local) | Parallel workers |
-| `reporter` | `html` | Generates an HTML report |
-| `trace` | `on-first-retry` | Captures trace on first retry |
-| **Browsers** | Chromium, Firefox, WebKit | All major browser engines |
+| Option | Local | CI | Description |
+|---|---|---|---|
+| `fullyParallel` | `true` | `true` | Run all test files in parallel |
+| `retries` | `0` | `2` | Auto-retry count for failed tests |
+| `workers` | auto | `1` | Number of parallel workers |
+| `reporter` | `html` | `html` | Output format |
+| `trace` | `on-first-retry` | `on-first-retry` | Capture trace on first retry |
+| **Browsers** | Chromium, Firefox, WebKit | Chromium, Firefox, WebKit | All major engines |
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork the repository
+1. Fork this repository
 2. Create a feature branch: `git checkout -b feat/your-feature`
 3. Commit your changes: `git commit -m 'feat: add your feature'`
 4. Push and open a Pull Request
 
-All pull requests will trigger the CI pipeline automatically. Please ensure tests pass before requesting a review.
+All pull requests trigger the CI pipeline automatically. Please ensure all tests pass before requesting a review.
 
 ---
 
 <p align="center">
-  Built with ❤️ using <a href="https://playwright.dev">Playwright</a> · Automated by <a href="https://github.com/features/actions">GitHub Actions</a> · Hosted on <a href="https://pages.cloudflare.com">Cloudflare Pages</a>
+  Made by <a href="https://github.com/phucyudev">Tran Gia Phuc</a> · Built with <a href="https://playwright.dev">Playwright</a> · Automated by <a href="https://github.com/features/actions">GitHub Actions</a> · Hosted on <a href="https://pages.cloudflare.com">Cloudflare Pages</a>
 </p>
