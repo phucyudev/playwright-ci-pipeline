@@ -8,7 +8,13 @@
     "type": "git",
     "url": "git+https://github.com/phucyudev/playwright-ci-pipeline.git"
   },
-  "keywords": ["playwright", "typescript", "ci-cd", "automation", "testing"],
+  "keywords": [
+    "playwright",
+    "typescript",
+    "ci-cd",
+    "automation",
+    "testing"
+  ],
   "author": "Tran Gia Phuc",
   "license": "ISC",
   "type": "commonjs",
@@ -19,5 +25,8 @@
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0"
+  },
+  "directories": {
+    "test": "tests"
   }
 }
