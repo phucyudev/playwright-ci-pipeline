@@ -1,21 +1,21 @@
 {
-  "name": "antigravity-testing-kit",
+  "name": "playwright-ci-pipeline",
   "version": "1.0.0",
-  "description": "👋 Chào mừng bạn đến với **Antigravity Testing Kit**!",
+  "description": "Playwright TypeScript CI/CD pipeline with GitHub Actions and Cloudflare Pages",
   "main": "index.js",
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anhtester/antigravity-testing-kit.git"
+    "url": "git+https://github.com/phucyudev/playwright-ci-pipeline.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["playwright", "typescript", "ci-cd", "automation", "testing"],
+  "author": "Tran Gia Phuc",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/anhtester/antigravity-testing-kit/issues"
+    "url": "https://github.com/phucyudev/playwright-ci-pipeline/issues"
   },
-  "homepage": "https://github.com/anhtester/antigravity-testing-kit#readme",
+  "homepage": "https://github.com/phucyudev/playwright-ci-pipeline#readme",
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0"
