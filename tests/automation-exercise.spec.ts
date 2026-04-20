@@ -70,7 +70,9 @@ test.describe('Products', () => {
 
     test('should view product detail', async ({ page }) => {
         await page.goto(`${BASE_URL}/products`)
-        await page.locator('.choose a').first().click()
+        // Navigate directly via href to avoid google_vignette overlay intercepting the click
+        const productHref = await page.locator('.choose a').first().getAttribute('href')
+        await page.goto(`${BASE_URL}${productHref}`)
         await expect(page).toHaveURL(/product_details/)
         await expect(page.locator('.product-information h2')).toBeVisible()
         await expect(page.locator('.product-information span span')).toBeVisible()
