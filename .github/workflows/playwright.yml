@@ -1,30 +1,74 @@
 name: Playwright Tests
+
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+
+permissions:
+  contents: write
+
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v4
+
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
+
     - name: Install dependencies
       run: npm ci
+
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
+
     - name: Run Playwright tests
-      run: npx playwright test --reporter=html
+      id: run-tests
+      run: npx playwright test
+      continue-on-error: true
+
+    - name: Parse test results
+      id: results
+      if: ${{ !cancelled() }}
+      run: |
+        if [ "${{ steps.run-tests.outcome }}" = "success" ]; then
+          echo "status=passed" >> $GITHUB_OUTPUT
+        else
+          echo "status=failed" >> $GITHUB_OUTPUT
+        fi
+
+        if [ -f test-results.json ]; then
+          node -e "
+            const r = require('./test-results.json');
+            const ms = r.stats.duration;
+            const m = Math.floor(ms / 60000);
+            const s = Math.round((ms % 60000) / 1000);
+            console.log('passed=' + r.stats.expected);
+            console.log('failed=' + r.stats.unexpected);
+            console.log('skipped=' + r.stats.skipped);
+            console.log('duration=' + (m > 0 ? m + 'm ' + s + 's' : s + 's'));
+          " >> $GITHUB_OUTPUT
+        else
+          echo "passed=0"  >> $GITHUB_OUTPUT
+          echo "failed=0"  >> $GITHUB_OUTPUT
+          echo "skipped=0" >> $GITHUB_OUTPUT
+          echo "duration=N/A" >> $GITHUB_OUTPUT
+        fi
+
+    # ── Artifact ──────────────────────────────────────────────────────────────
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+
+    # ── Cloudflare Pages (latest report) ──────────────────────────────────────
     - name: Deploy to Cloudflare Pages
       if: ${{ !cancelled() }}
       uses: cloudflare/wrangler-action@v3
@@ -32,3 +76,93 @@ jobs:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         command: pages deploy playwright-report --project-name=qa-automation-report --commit-dirty=true
+
+    # ── GitHub Pages (report history) ─────────────────────────────────────────
+    - name: Checkout gh-pages branch
+      uses: actions/checkout@v4
+      if: ${{ !cancelled() }}
+      with:
+        ref: gh-pages
+        path: gh-pages-content
+        token: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
+
+    - name: Deploy report to GitHub Pages history
+      if: ${{ !cancelled() }}
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REPO: ${{ github.repository }}
+        RUN_STATUS: ${{ steps.results.outputs.status }}
+        RUN_PASSED: ${{ steps.results.outputs.passed }}
+        RUN_FAILED: ${{ steps.results.outputs.failed }}
+        RUN_SKIPPED: ${{ steps.results.outputs.skipped }}
+        RUN_DURATION: ${{ steps.results.outputs.duration }}
+        RUN_NUMBER: ${{ github.run_number }}
+        RUN_BRANCH: ${{ github.ref_name }}
+        RUN_COMMIT: ${{ github.sha }}
+        RUN_ACTOR: ${{ github.actor }}
+      run: |
+        # Initialize gh-pages repo if the branch did not exist yet
+        if [ ! -d "gh-pages-content/.git" ]; then
+          rm -rf gh-pages-content
+          mkdir gh-pages-content
+          cd gh-pages-content
+          git init
+          git checkout --orphan gh-pages
+          cd ..
+        fi
+
+        mkdir -p gh-pages-content/reports
+
+        # Unique folder per run: <run_number>_<YYYY-MM-DD>
+        RUN_DIR="${RUN_NUMBER}_$(date -u +%Y-%m-%d)"
+        export RUN_DIR
+        mkdir -p "gh-pages-content/reports/${RUN_DIR}"
+
+        # Copy Playwright HTML report into the run folder
+        if [ -d playwright-report ]; then
+          cp -r playwright-report/. "gh-pages-content/reports/${RUN_DIR}/"
+        fi
+
+        # Write meta.json (use Node.js so special chars in branch/actor are safe)
+        node -e "
+          const fs = require('fs');
+          const meta = {
+            run:          parseInt(process.env.RUN_NUMBER),
+            status:       process.env.RUN_STATUS,
+            passed:       parseInt(process.env.RUN_PASSED)  || 0,
+            failed:       parseInt(process.env.RUN_FAILED)  || 0,
+            skipped:      parseInt(process.env.RUN_SKIPPED) || 0,
+            duration:     process.env.RUN_DURATION || 'N/A',
+            date:         new Date().toISOString().replace('T',' ').slice(0,16) + ' UTC',
+            branch:       process.env.RUN_BRANCH,
+            commit:       process.env.RUN_COMMIT,
+            short_commit: process.env.RUN_COMMIT.slice(0, 7),
+            actor:        process.env.RUN_ACTOR
+          };
+          fs.writeFileSync(
+            'gh-pages-content/reports/' + process.env.RUN_DIR + '/meta.json',
+            JSON.stringify(meta, null, 2)
+          );
+        "
+
+        # Regenerate the index dashboard
+        GITHUB_REPOSITORY="$REPO" \
+          node .github/scripts/generate-index.js gh-pages-content/reports \
+          > gh-pages-content/index.html
+
+        # Commit & push
+        cd gh-pages-content
+        git config user.name  "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
+          2>/dev/null || \
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+        git add .
+        git commit -m "report: run #${RUN_NUMBER} [${RUN_STATUS}] ${RUN_BRANCH}@${RUN_COMMIT:0:7}"
+        git push origin HEAD:gh-pages
+
+    # ── Propagate test failure to the job status ───────────────────────────────
+    - name: Fail job if tests failed
+      if: steps.run-tests.outcome == 'failure'
+      run: exit 1
