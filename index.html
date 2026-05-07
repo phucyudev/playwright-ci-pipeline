@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QA Test Report History</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    header h1 { font-size: 1.25rem; color: #f0f6fc; font-weight: 600; }
+    header p { font-size: 0.8rem; color: #8b949e; margin-top: 2px; }
+    .latest-link {
+      font-size: 0.85rem;
+      color: #58a6ff;
+      text-decoration: none;
+      border: 1px solid #30363d;
+      padding: 6px 14px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .latest-link:hover { background: #161b22; border-color: #58a6ff; }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      padding: 20px 32px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 14px 20px;
+      min-width: 120px;
+    }
+    .stat .label { font-size: 0.7rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat .value { font-size: 1.75rem; font-weight: 700; margin-top: 4px; line-height: 1; }
+    .stat.total .value { color: #f0f6fc; }
+    .stat.pass .value { color: #3fb950; }
+    .stat.fail .value { color: #f85149; }
+
+    .table-wrap { padding: 0 32px 40px; overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 0.85rem;
+    }
+    th {
+      background: #0d1117;
+      color: #8b949e;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid #30363d;
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #21262d;
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #1c2128; }
+    tr.fail-row td { background: #1a1118; }
+    tr.fail-row:hover td { background: #1f1520; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge.pass { background: #0d3320; color: #3fb950; border: 1px solid #2ea043; }
+    .badge.fail { background: #3d0f0d; color: #f85149; border: 1px solid #da3633; }
+    .badge.unknown { background: #21262d; color: #8b949e; border: 1px solid #30363d; }
+
+    code {
+      background: #0d1117;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: #79c0ff;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+    }
+    a { color: #58a6ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .count-pass { color: #3fb950; font-weight: 600; }
+    .count-fail { color: #f85149; font-weight: 600; }
+    .count-skip { color: #e3b341; font-weight: 600; }
+
+    .btn-view {
+      display: inline-block;
+      padding: 5px 12px;
+      background: #1f6feb;
+      color: #fff !important;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      text-decoration: none !important;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn-view:hover { background: #388bfd; }
+
+    .empty { text-align: center; padding: 48px; color: #484f58; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>&#127381; Playwright Test Report History</h1>
+      <p>Automated QA report &mdash; updated on every CI run</p>
+    </div>
+    <a href="reports/9_2026-05-07/index.html" class="latest-link">View latest report &rarr;</a>
+  </header>
+
+  <div class="stats">
+    <div class="stat total">
+      <div class="label">Total Runs</div>
+      <div class="value">1</div>
+    </div>
+    <div class="stat pass">
+      <div class="label">Passed</div>
+      <div class="value">1</div>
+    </div>
+    <div class="stat fail">
+      <div class="label">Failed</div>
+      <div class="value">0</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th>Status</th>
+          <th>Date (UTC)</th>
+          <th>Branch</th>
+          <th>Commit</th>
+          <th>Triggered By</th>
+          <th>Tests</th>
+          <th>Duration</th>
+          <th>Report</th>
+        </tr>
+      </thead>
+      <tbody>
+                <tr>
+          <td><strong>#9</strong></td>
+          <td><span class="badge pass">&#10003; PASSED</span></td>
+          <td>2026-05-07 10:35 UTC</td>
+          <td><code>main</code></td>
+          <td><a href="https://github.com/phucyudev/playwright-ci-pipeline/commit/9389d4d3c4e31d8d5feda718707b1b22fc31f676" target="_blank" rel="noopener"><code>9389d4d</code></a></td>
+          <td>phucyudev</td>
+          <td><span class="count-pass">39P</span></td>
+          <td>1m 10s</td>
+          <td><a href="reports/9_2026-05-07/index.html" class="btn-view">View &rarr;</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
