@@ -28,6 +28,6 @@ export class ProductsPage extends BasePage {
 
   async addFirstProductToCart() {
     await this.page.locator('.product-image-wrapper').first().hover()
-    await this.page.locator('.add-to-cart').first().click()
+    await this.page.locator('.add-to-cart').first().click({ force: true })
   }
 }
